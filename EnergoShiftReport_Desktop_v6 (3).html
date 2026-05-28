@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<meta name="theme-color" content="#0c0f14" />
+<title>ENERGO Shift Report</title>
+<link rel="manifest" id="manifest" />
+<style>
+:root{
+  --bg:#0c0f14;--panel:#12161d;--panel-2:#181d27;--line:#252d3a;
+  --ink:#e7edf5;--ink-dim:#8b96a8;--ink-mut:#566173;--accent:#5ec8e0;
+  --navy:#1F3864;--blue:#2E75B6;--green:#3ddc91;--amber:#ffb338;--red:#ff6b5e;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);
+  color:var(--ink);-webkit-font-smoothing:antialiased;padding-bottom:64px}
+header{position:sticky;top:0;z-index:20;background:var(--panel);border-bottom:2px solid var(--blue);
+  padding:7px 12px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.h-title{font-size:14px;font-weight:700;color:#fff;line-height:1.1}
+.h-title small{display:block;font-size:11px;color:var(--accent);font-weight:600}
+.shiftbtns{display:flex;gap:6px}
+.shiftbtns button{background:var(--panel-2);border:1px solid var(--line);color:var(--ink-dim);
+  border-radius:8px;padding:7px 12px;font-weight:700;font-size:13px;cursor:pointer}
+.shiftbtns button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.wrap{max-width:100%;margin:0 auto;padding:6px 8px 0;column-width:250px;column-gap:8px}
+@media(max-width:760px){.wrap{column-width:auto;columns:1}}
+.topgrid{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.topgrid label{flex:1;min-width:120px;font-size:10px;color:var(--ink-mut);font-weight:700;text-transform:uppercase;letter-spacing:.08em}
+.topgrid input,.topgrid select{width:100%;margin-top:3px;background:var(--panel-2);border:1px solid var(--line);
+  color:var(--ink);border-radius:7px;padding:7px;font-size:13px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;margin:0 0 7px;overflow:hidden;break-inside:avoid;display:inline-block;width:100%}
+.card>summary{list-style:none;cursor:pointer;padding:5px 8px;font-size:11.5px;font-weight:700;color:#fff;
+  display:flex;align-items:center;justify-content:space-between;background:var(--panel-2)}
+.card>summary::-webkit-details-marker{display:none}
+.card>summary .chev{color:var(--ink-dim);font-size:11px;transition:.2s}
+.card[open]>summary .chev{transform:rotate(90deg)}
+.card .body{padding:6px 8px}
+.row{display:flex;align-items:center;gap:5px;margin-bottom:4px;flex-wrap:wrap}
+.row:last-child{margin-bottom:0}
+.row .lbl{flex:1 1 80px;font-size:11px;color:var(--ink-dim);min-width:64px}
+.stepper{display:flex;align-items:center;gap:0;border:1px solid var(--line);border-radius:9px;overflow:hidden}
+.stepper button{width:38px;height:38px;border:none;background:var(--panel-2);color:var(--accent);font-size:20px;cursor:pointer}
+.stepper input{width:66px;height:38px;border:none;border-left:1px solid var(--line);border-right:1px solid var(--line);
+  background:var(--bg);color:var(--ink);text-align:center;font-size:15px;font-weight:700}
+.num{width:62px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;
+  padding:4px;font-size:12px;text-align:center;font-weight:600}
+.seg{display:flex;gap:3px;flex-wrap:wrap}
+.seg button{background:var(--panel-2);border:1px solid var(--line);color:var(--ink-dim);border-radius:6px;
+  padding:5px 7px;font-size:11px;font-weight:600;cursor:pointer}
+.seg button.on{background:var(--green);color:#06140b;border-color:var(--green)}
+.seg button.on.amber{background:var(--amber);color:#1c1203}
+.seg button.on.red{background:var(--red);color:#1a0606}
+.pumprow{margin-bottom:3px}
+.pumprow .lbl{flex:0 0 48px;min-width:48px;font-weight:700;color:var(--ink);font-size:10.5px}
+.statusrow{flex-wrap:nowrap}
+.statusrow .lbl{flex:0 0 52px;min-width:52px;font-size:10.5px}
+.statusrow .seg{flex-wrap:nowrap;gap:3px}
+.statusrow .seg button{padding:5px 5px;font-size:10px}
+.statusrow .num{width:50px}
+.pumpseg{flex-wrap:nowrap !important;gap:2px}
+.pumpseg button{flex:1;padding:4px 0;font-size:9.5px;min-width:0}
+.pjtseg{flex-wrap:nowrap !important;gap:2px}
+.pjtseg button{flex:1;min-width:0;padding:4px 0;font-size:10px;font-weight:700;border:1px solid var(--line);border-radius:4px;cursor:pointer}
+.pjtseg button.pjtok{background:#2ecc71;color:#06140b}
+.pjtseg button.pjtbad{background:#e74c3c;color:#fff}
+.phrow{flex-direction:column;align-items:stretch;gap:3px;margin-bottom:5px}
+.phrow .lbl{flex:0 0 auto;min-width:0;font-weight:700;color:#fff;font-size:11px;margin-bottom:0}
+.phlog{background:var(--bg);border:1px solid var(--line);border-radius:6px;color:var(--ink-dim);
+  padding:5px 7px;font-size:10px;line-height:1.4;font-family:ui-monospace,monospace;
+  max-height:54px;overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.phlog.today{max-height:48px;border-color:var(--accent);color:var(--ink);background:#0e1a22}
+.phsub{font-size:9px;font-weight:700;color:var(--ink-mut);letter-spacing:.05em;text-transform:uppercase;margin-top:1px}
+.phsub.today{color:var(--accent);margin-top:2px}
+.phadd{display:flex;gap:4px;flex-wrap:wrap}
+.phinp{flex:1;min-width:90px;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:6px;padding:5px 7px;font-size:12px}
+.phbtn{background:var(--accent);color:#06222b;border:none;border-radius:6px;padding:0 9px;font-weight:700;font-size:11px;cursor:pointer}
+.phbtn.ghost{background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line)}
+.chips{display:flex;gap:6px;flex-wrap:wrap}
+.chip{background:var(--panel-2);border:1px solid var(--line);color:var(--ink-dim);border-radius:20px;
+  padding:7px 13px;font-size:13px;font-weight:600;cursor:pointer;user-select:none}
+.chip.on{background:var(--accent);color:#06222b;border-color:var(--accent)}
+.hint{font-size:11px;color:var(--ink-mut);margin:0 0 9px}
+.deflist{display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+.defitem{display:flex;gap:8px;align-items:center;background:var(--panel-2);border:1px solid var(--line);
+  border-radius:9px;padding:8px 10px}
+.defitem span{flex:1;font-size:13px}
+.defitem button{background:none;border:none;color:var(--red);font-size:18px;cursor:pointer}
+.addrow{display:flex;gap:8px}
+.addrow input{flex:1;background:var(--bg);border:1px solid var(--line);color:var(--ink);border-radius:9px;padding:10px;font-size:14px}
+.addrow button{background:var(--accent);color:#06222b;border:none;border-radius:9px;padding:0 16px;font-weight:700;cursor:pointer}
+.tiny{width:56px}
+.foot{position:fixed;bottom:0;left:0;right:0;background:var(--panel);border-top:1px solid var(--line);
+  padding:7px 12px;display:flex;gap:8px;z-index:30}
+.foot button{flex:1;border:none;border-radius:8px;padding:9px;font-size:13px;font-weight:700;cursor:pointer}
+.foot .gen{background:var(--green);color:#06140b}
+.foot .clr{background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line);flex:0 0 auto;padding:9px 12px}
+.modal-bg{position:fixed;inset:0;background:rgba(6,8,12,.8);display:none;align-items:center;justify-content:center;z-index:50;padding:14px}
+.modal-bg.open{display:flex}
+.modal{width:min(680px,100%);max-height:88vh;display:flex;flex-direction:column;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:16px}
+.modal h3{margin:0 0 10px;font-size:16px;flex-shrink:0;color:#fff}
+.report{flex:1;overflow:auto;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:12px;
+  font-size:13px;line-height:1.5;white-space:pre-wrap;font-family:ui-monospace,monospace;color:var(--ink)}
+.modal .acts{display:flex;gap:9px;margin-top:12px;flex-shrink:0}
+.modal .acts button{flex:1;border:none;border-radius:10px;padding:13px;font-weight:700;font-size:14px;cursor:pointer}
+.modal .copy{background:var(--accent);color:#06222b}
+.modal .close{background:var(--panel-2);color:var(--ink-dim);border:1px solid var(--line)}
+.toast{position:fixed;bottom:96px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+  font-weight:600;font-size:13px;padding:11px 18px;border-radius:9px;z-index:60}
+.save-dot{font-size:11px;color:var(--green);font-weight:700}
+</style>
+</head>
+<body>
+<header>
+  <div class="h-title">ENERGO OPERATION<small>Daily board — all data at a glance</small></div>
+</header>
+
+<div class="wrap">
+  <div class="topgrid">
+    <label>Date<input type="date" id="rdate" /></label>
+    <label>Stage<select id="stage"><option>1</option><option>2</option></select></label>
+    <span class="save-dot" id="savedot">Saved on device</span>
+  </div>
+  <div id="form"></div>
+</div>
+
+<div class="foot">
+  <button class="clr" id="clrBtn">Reset</button>
+  <button class="gen" id="genBtn">Generate Report ▸</button>
+</div>
+
+<div class="modal-bg" id="mbg">
+  <div class="modal">
+    <h3>Shift Report — ready to paste</h3>
+    <div class="report" id="reportOut"></div>
+    <div class="acts">
+      <button class="close" id="closeBtn">Close</button>
+      <button class="copy" id="copyBtn">Copy report</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const state=loadState();
+
+/* ---------- schema: defines the whole form with minimal typing ---------- */
+const PASS1=["1A","1B","1C","1D","1E"], PASS2=["2A","2B","2C","2D","2E"];
+const PASS3=["3A","3B","3C","3D"],      PASS4=["4A","4B","4C","4D"];
+// Each row has a `stage` field: 1 = Stage-1 only, 2 = Stage-2 only, "both" = always shown.
+const SCHEMA=[
+  {id:"load",t:"Unit PLF / Sp Coal",rows:[
+    // Stage 1
+    {k:"u1",l:"U#1 (PLF/Sp Coal)",type:"pair",stage:1},
+    {k:"u2",l:"U#2 (PLF/Sp Coal)",type:"pair",stage:1},
+    // Stage 2
+    {k:"u3",l:"U#3 (PLF/Sp Coal)",type:"pair",stage:2},
+    {k:"u4",l:"U#4 (PLF/Sp Coal)",type:"pair",stage:2},
+  ]},
+  {id:"evac",t:"Evacuation Cycles",rows:[
+    {k:"p1",l:"Pass 1A–1E",type:"cycles",units:PASS1,stage:1},
+    {k:"p2",l:"Pass 2A–2E",type:"cycles",units:PASS2,stage:1},
+    {k:"p3",l:"Pass 3A–3D",type:"cycles",units:PASS3,stage:2},
+    {k:"p4",l:"Pass 4A–4D",type:"cycles",units:PASS4,stage:2},
+  ]},
+  {id:"silo",t:"Silo Level (mtr)",rows:[
+    {k:"s1",l:"Silo #1",type:"silo",stage:1},
+    {k:"s2",l:"Silo #2",type:"silo",stage:1},
+    {k:"s3",l:"Silo #3",type:"silo",stage:1},
+    {k:"a2",l:"Augm. Silo #2",type:"silo",stage:1},
+    {k:"a3",l:"Augm. Silo #3",type:"silo",stage:1},
+    {k:"sA",l:"Silo A",type:"silo",stage:2},
+    {k:"sB",l:"Silo B",type:"silo",stage:2},
+    {k:"sC",l:"Silo C",type:"silo",stage:2},
+  ]},
+  {id:"unload",t:"Unloading",rows:[
+    {k:"st1t",l:"Stage#1 tons",type:"num",stage:1},
+    {k:"augt",l:"Augm. Silo tons",type:"num",stage:1},
+    {k:"st2t",l:"Stage#2 tons (previous day)",type:"num",stage:2},
+  ]},
+  {id:"esp",t:"Unit ESP / ERM & CRM",rows:[
+    {k:"u1off",l:"U#1 OFF fields",type:"text",stage:1},
+    {k:"u1ali",l:"U#1 ALI / 0kV",type:"text",stage:1},
+    {k:"u2off",l:"U#2 OFF fields",type:"text",stage:1},
+    {k:"u2ali",l:"U#2 ALH / 0kV",type:"text",stage:1},
+    {k:"u3off",l:"U#3 OFF fields",type:"text",stage:2},
+    {k:"u3ali",l:"U#3 ALI / 0kV",type:"text",stage:2},
+    {k:"u4off",l:"U#4 OFF fields",type:"text",stage:2},
+    {k:"u4ali",l:"U#4 ALH / 0kV",type:"text",stage:2},
+  ]},
+  {id:"vac",t:"Vacuum Pump Status",rows:[
+    ...["1","2"].flatMap(u=>[1,2].flatMap(t=>["A","B","C","D","E"].map(le=>
+      ({k:"vp_"+u+le+t,l:u+le+t,type:"pumpstat",stage:1})
+    ))),
+    ...["3","4"].flatMap(u=>[1,2].flatMap(t=>["A","B","C","D"].map(le=>
+      ({k:"vp_"+u+le+t,l:u+le+t,type:"pumpstat",stage:2})
+    ))),
+  ]},
+  {id:"hopperlevels",t:"Hopper Levels",rows:[
+    {k:"hl_hdr",l:"",type:"hopperheader",stage:1},
+    ...["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"].map(n=>({k:"hl_"+n,l:n,type:"hopperlevel",stage:1})),
+  ]},
+  {id:"vent",t:"Vent Fan Status",rows:[
+    {k:"vf_s1f1",l:"Silo-1 Fan 1",type:"runstop",stage:1},{k:"vf_s1f2",l:"Silo-1 Fan 2",type:"runstop",stage:1},
+    {k:"vf_s2f1",l:"Silo-2 Fan 1",type:"runstop",stage:1},{k:"vf_s2f2",l:"Silo-2 Fan 2",type:"runstop",stage:1},
+    {k:"vf_s3f1",l:"Silo-3 Fan 1",type:"runstop",stage:1},{k:"vf_s3f2",l:"Silo-3 Fan 2",type:"runstop",stage:1},
+    {k:"vf_a2",l:"Aug Silo-2 Fan",type:"runstop",stage:1},{k:"vf_a3",l:"Aug Silo-3 Fan",type:"runstop",stage:1},
+    {k:"vf_A",l:"Vent Fan A",type:"runstop",stage:2},
+    {k:"vf_B",l:"Vent Fan B",type:"runstop",stage:2},
+    {k:"vf_C",l:"Vent Fan C",type:"runstop",stage:2},
+  ]},
+  {id:"ct",t:"Collecting Tower Status (tap = choke)",rows:[
+    {k:"ct1",l:"U#1",type:"ctgrid",unit:"1",letters:["A","B","C","D","E"],stage:1},
+    {k:"ct2",l:"U#2",type:"ctgrid",unit:"2",letters:["A","B","C","D","E"],stage:1},
+    {k:"ct3",l:"U#3",type:"ctgrid",unit:"3",letters:["A","B","C","D"],stage:2},
+    {k:"ct4",l:"U#4",type:"ctgrid",unit:"4",letters:["A","B","C","D"],stage:2},
+  ]},
+  {id:"fahp",t:"FAHP Status",rows:[
+    {k:"fa",l:"FAHP A",type:"seg",opts:["Running","Available","NTS"],stage:1},
+    {k:"fb",l:"FAHP B",type:"seg",opts:["Running","Available","NTS"],stage:1},
+    {k:"wu1",l:"U#1 WU FAHP pr",type:"num",unit:"kg/cm²",stage:1},
+    {k:"wu2",l:"U#2 WU FAHP pr",type:"num",unit:"kg/cm²",stage:1},
+    {k:"s2_fa",l:"FAHP A",type:"seg",opts:["Running","Available","NTS"],stage:2},
+    {k:"s2_fb",l:"FAHP B",type:"seg",opts:["Running","Available","NTS"],stage:2},
+    {k:"s2_fc",l:"FAHP C",type:"seg",opts:["Running","Available","NTS"],stage:2},
+    {k:"wu3",l:"U#3 WU FAHP pr",type:"num",unit:"kg/cm²",stage:2},
+    {k:"wu4",l:"U#4 WU FAHP pr",type:"num",unit:"kg/cm²",stage:2},
+  ]},
+  {id:"iac",t:"IAC / Pressure & Dryers",rows:[
+    {k:"iac1",l:"IAC 1",type:"statusval",ph:"Pressure",unit:"kg/cm²",stage:1},
+    {k:"iac2",l:"IAC 2",type:"statusval",ph:"Pressure",unit:"kg/cm²",stage:1},
+    {k:"iacd1",l:"IAC Dryer 1",type:"statusval",ph:"Dew point",unit:"",stage:1},
+    {k:"iacd2",l:"IAC Dryer 2",type:"statusval",ph:"Dew point",unit:"",stage:1},
+    {k:"iacA",l:"IAC A",type:"statusval",ph:"Pressure",unit:"kg/cm²",stage:2},
+    {k:"iacB",l:"IAC B",type:"statusval",ph:"Pressure",unit:"kg/cm²",stage:2},
+    {k:"iacC",l:"IAC C",type:"statusval",ph:"Pressure",unit:"kg/cm²",stage:2},
+    {k:"iacD",l:"IAC D",type:"statusval",ph:"Pressure",unit:"kg/cm²",stage:2},
+    {k:"iacdA",l:"IAC Dryer A",type:"statusval",ph:"Dew point",unit:"",stage:2},
+    {k:"iacdB",l:"IAC Dryer B",type:"statusval",ph:"Dew point",unit:"",stage:2},
+    {k:"iacdC",l:"IAC Dryer C",type:"statusval",ph:"Dew point",unit:"",stage:2},
+    {k:"iacdD",l:"IAC Dryer D",type:"statusval",ph:"Dew point",unit:"",stage:2},
+  ]},
+  {id:"comp",t:"Compressor Status & Dew Point",rows:[
+    {k:"tac1",l:"TAC #1",type:"statusval",ph:"Dew Point",unit:"",stage:1},
+    {k:"tac2",l:"TAC #2",type:"statusval",ph:"Dew Point",unit:"",stage:1},
+    {k:"tac3",l:"TAC #3",type:"statusval",ph:"Dew Point",unit:"",stage:1},
+    {k:"augtac1",l:"Aug TAC-1",type:"statusval",ph:"Dew Point",unit:"",stage:1},
+    {k:"augtac2",l:"Aug TAC-2",type:"statusval",ph:"Dew Point",unit:"",stage:1},
+    {k:"augtac3",l:"Aug TAC-3",type:"statusval",ph:"Dew Point",unit:"",stage:1},
+    {k:"tac3A",l:"TAC-3A",type:"statusval",ph:"Dew Point",unit:"",stage:2},
+    {k:"tac3B",l:"TAC-3B",type:"statusval",ph:"Dew Point",unit:"",stage:2},
+    {k:"tac3C",l:"TAC-3C",type:"statusval",ph:"Dew Point",unit:"",stage:2},
+    {k:"tac4A",l:"TAC-4A",type:"statusval",ph:"Dew Point",unit:"",stage:2},
+    {k:"tac4B",l:"TAC-4B",type:"statusval",ph:"Dew Point",unit:"",stage:2},
+    {k:"tac4C",l:"TAC-4C",type:"statusval",ph:"Dew Point",unit:"",stage:2},
+  ]},
+  {id:"alv",t:"ALV Defects (tap an ALV to mark defective)",rows:[
+    ...["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"
+      ].map(n=>({k:"alv_"+n,l:n,type:"alvnums",stage:1})),
+    ...["3A","3B","3C","3D","4A","4B","4C","4D"
+      ].map(n=>({k:"alv_"+n,l:n,type:"alvnums",stage:2})),
+  ]},
+  {id:"buffer",t:"Buffer Hopper Status",rows:[
+    {k:"bh_1A",l:"1A",type:"buffer",stage:1},{k:"bh_1B",l:"1B",type:"buffer",stage:1},
+    {k:"bh_1C",l:"1C",type:"buffer",stage:1},{k:"bh_1D",l:"1D",type:"buffer",stage:1},
+    {k:"bh_1E",l:"1E",type:"buffer",stage:1},
+    {k:"bh_2A",l:"2A",type:"buffer",stage:1},{k:"bh_2B",l:"2B",type:"buffer",stage:1},
+    {k:"bh_2C",l:"2C",type:"buffer",stage:1},{k:"bh_2D",l:"2D",type:"buffer",stage:1},
+    {k:"bh_2E",l:"2E",type:"buffer",stage:1},
+    {k:"bh_3A",l:"3A",type:"buffer",stage:2},{k:"bh_3B",l:"3B",type:"buffer",stage:2},
+    {k:"bh_3C",l:"3C",type:"buffer",stage:2},{k:"bh_3D",l:"3D",type:"buffer",stage:2},
+    {k:"bh_4A",l:"4A",type:"buffer",stage:2},{k:"bh_4B",l:"4B",type:"buffer",stage:2},
+    {k:"bh_4C",l:"4C",type:"buffer",stage:2},{k:"bh_4D",l:"4D",type:"buffer",stage:2},
+  ]},
+  {id:"esphist",t:"ESP Pass History (running log, shared across days)",rows:[
+    ...["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"
+      ].map(n=>({k:n,l:n,type:"passhist",stage:1})),
+    ...["3A","3B","3C","3D","4A","4B","4C","4D"
+      ].map(n=>({k:n,l:n,type:"passhist",stage:2})),
+  ]},
+  {id:"defects",t:"Defects",defects:"def"},
+  {id:"cidef",t:"C&I Defects",defects:"cidef"},
+  {id:"eldef",t:"Elec Defects",defects:"eldef"},
+];
+
+/* ---------- render ---------- */
+function val(id,def=""){return state.f[id]!==undefined?state.f[id]:def;}
+function setVal(id,v){state.f[id]=v;save();}
+
+function currentStage(){return ($("stage")&&$("stage").value)||"1";}
+function rowMatchesStage(r){const cs=currentStage();return !r.stage || r.stage==="both" || String(r.stage)===String(cs);}
+
+function render(){
+  const form=$("form");form.innerHTML="";
+  const cs=currentStage();
+  SCHEMA.forEach(sec=>{
+    const rows=sec.defects?null:sec.rows.filter(rowMatchesStage);
+    if(rows && rows.length===0) return; // hide whole section if no rows apply
+    const d=document.createElement("details");d.className="card";d.open=!["esphist","vac"].includes(sec.id);
+    const sum=document.createElement("summary");sum.innerHTML=`<span>${sec.t}</span><span class="chev">▸</span>`;
+    d.appendChild(sum);
+    const body=document.createElement("div");body.className="body";
+    if(sec.defects){ buildDefects(body,sec.defects); }
+    else rows.forEach(r=>body.appendChild(buildRow(r)));
+    d.appendChild(body);form.appendChild(d);
+  });
+}
+
+function buildRow(r){
+  const row=document.createElement("div");row.className="row"+((r.type==="pumpstat"||r.type==="pjtnums"||r.type==="alvnums")?" pumprow":"")+(r.type==="statusval"?" statusrow":"");
+  const lbl=document.createElement("div");lbl.className="lbl";lbl.textContent=r.l;row.appendChild(lbl);
+  if(r.type==="num"){
+    const i=document.createElement("input");i.className="num";i.type="text";i.inputMode="decimal";
+    i.value=val(r.k);i.oninput=()=>setVal(r.k,i.value);row.appendChild(i);
+    if(r.unit){const u=document.createElement("span");u.style.color="var(--ink-mut)";u.style.fontSize="12px";u.textContent=r.unit;row.appendChild(u);}
+  } else if(r.type==="pair"){
+    const i=document.createElement("input");i.className="num";i.style.width="120px";i.placeholder="350/318";
+    i.value=val(r.k);i.oninput=()=>setVal(r.k,i.value);row.appendChild(i);
+  } else if(r.type==="silo"){
+    const i=document.createElement("input");i.className="num tiny";i.inputMode="decimal";i.placeholder="0.00";
+    i.value=val(r.k);i.oninput=()=>setVal(r.k,i.value);row.appendChild(i);
+    const f=document.createElement("button");f.className="chip"+(val(r.k+"_F")?" on":"");f.textContent="Full";
+    f.onclick=()=>{const nv=!val(r.k+"_F");setVal(r.k+"_F",nv);f.className="chip"+(nv?" on":"");};row.appendChild(f);
+  } else if(r.type==="cycles"){
+    const wrap=document.createElement("div");wrap.style.display="flex";wrap.style.gap="6px";wrap.style.flexWrap="wrap";
+    r.units.forEach(u=>{
+      const box=document.createElement("div");box.style.textAlign="center";
+      const cap=document.createElement("div");cap.style.fontSize="10px";cap.style.color="var(--ink-mut)";cap.textContent=u;
+      const i=document.createElement("input");i.className="num";i.style.width="48px";i.inputMode="numeric";i.value=val(r.k+"_"+u,"1");
+      i.oninput=()=>setVal(r.k+"_"+u,i.value);
+      box.appendChild(cap);box.appendChild(i);wrap.appendChild(box);
+    });
+    row.appendChild(wrap);
+  } else if(r.type==="buffer"){
+    // Available/Permit toggle (default Available) + PJT pressure value + 1-11 PJT buttons (green ok, red defective)
+    const seg=document.createElement("div");seg.className="seg";
+    const cur=val(r.k+"_st","Available");
+    ["Available","Permit"].forEach(o=>{
+      const bb=document.createElement("button");bb.textContent=o;
+      const cls=o==="Permit"?"amber":"";
+      if(cur===o)bb.className="on "+cls;
+      bb.onclick=()=>{setVal(r.k+"_st",o);[...seg.children].forEach(c=>c.className="");bb.className="on "+cls;};
+      seg.appendChild(bb);
+    });
+    row.appendChild(seg);
+    const pjp=document.createElement("input");pjp.className="num tiny";pjp.inputMode="decimal";
+    pjp.placeholder="PJT pr";pjp.value=val(r.k+"_pr");pjp.oninput=()=>setVal(r.k+"_pr",pjp.value);
+    row.appendChild(pjp);
+    const pjseg=document.createElement("div");pjseg.className="seg pjtseg";pjseg.style.flex="1 0 100%";
+    for(let n=1;n<=11;n++){
+      const bb=document.createElement("button");bb.textContent=n;
+      const bad=val(r.k+"_pjt"+n);
+      bb.className=bad?"pjtbad":"pjtok";
+      bb.onclick=()=>{const nv=!val(r.k+"_pjt"+n);setVal(r.k+"_pjt"+n,nv);bb.className=nv?"pjtbad":"pjtok";};
+      pjseg.appendChild(bb);
+    }
+    row.appendChild(pjseg);
+  } else if(r.type==="ctgrid"){
+    // Two rows of toggle buttons: <unit><letter>1 and <unit><letter>2. Tap = choke.
+    const letters=r.letters||["A","B","C","D","E"];
+    const wrap=document.createElement("div");wrap.style.display="flex";wrap.style.flexDirection="column";wrap.style.gap="3px";wrap.style.flex="1";
+    [1,2].forEach(tier=>{
+      const line=document.createElement("div");line.style.display="flex";line.style.gap="3px";line.style.flexWrap="nowrap";
+      letters.forEach(letter=>{
+        const id=r.unit+letter+tier;            // e.g. 1A1 or 3A1
+        const bb=document.createElement("button");bb.textContent=id;
+        bb.style.cssText="flex:1;min-width:0;padding:3px 2px;font-size:10px;font-weight:700;background:var(--panel-2);border:1px solid var(--line);color:var(--ink-dim);border-radius:5px;cursor:pointer;white-space:nowrap";
+        if(val(r.k+"_"+id)){bb.style.background="var(--red)";bb.style.color="#1a0606";bb.style.borderColor="var(--red)";}
+        bb.onclick=()=>{
+          const nv=!val(r.k+"_"+id);setVal(r.k+"_"+id,nv);
+          if(nv){bb.style.background="var(--red)";bb.style.color="#1a0606";bb.style.borderColor="var(--red)";}
+          else{bb.style.background="var(--panel-2)";bb.style.color="var(--ink-dim)";bb.style.borderColor="var(--line)";}
+        };
+        line.appendChild(bb);
+      });
+      wrap.appendChild(line);
+    });
+    row.appendChild(wrap);
+  } else if(r.type==="twoval"){
+    // two value inputs side by side (e.g. dryer dew point + gas pressure)
+    const i1=document.createElement("input");i1.className="num tiny";i1.inputMode="decimal";i1.placeholder=r.ph1||"val1";
+    i1.value=val(r.k+"_a");i1.oninput=()=>setVal(r.k+"_a",i1.value);row.appendChild(i1);
+    const i2=document.createElement("input");i2.className="num tiny";i2.inputMode="decimal";i2.placeholder=r.ph2||"val2";
+    i2.value=val(r.k+"_b");i2.oninput=()=>setVal(r.k+"_b",i2.value);row.appendChild(i2);
+  } else if(r.type==="passhist"){
+    // Per-pass cross-day log. Past days appear as read-only reference; today's section starts empty each new day.
+    const wrap=document.createElement("div");wrap.style.display="flex";wrap.style.flexDirection="column";wrap.style.gap="6px";wrap.style.flex="1";wrap.style.width="100%";
+
+    const pastLabel=document.createElement("div");pastLabel.className="phsub";pastLabel.textContent="Previous days";
+    const pastLog=document.createElement("div");pastLog.className="phlog";
+    const todayLabel=document.createElement("div");todayLabel.className="phsub today";
+    const todayLog=document.createElement("div");todayLog.className="phlog today";
+
+    const refresh=()=>{
+      const h=loadPassHist();
+      const all=(h[r.k]||"").split("\n").filter(Boolean);
+      const d=$("rdate").value||(new Date().toISOString().slice(0,10));
+      const [y,m,dd]=d.split("-");const todayStamp=`${dd}/${m}/${y}`;
+      const past=[],today=[];
+      all.forEach(line=>{ if(line.startsWith(todayStamp)) today.push(line); else past.push(line); });
+      pastLog.textContent=past.length?past.join("\n"):"(no entries from previous days)";
+      todayLog.textContent=today.length?today.join("\n"):"(no entries today yet — add below)";
+      todayLabel.textContent=`Today — ${todayStamp}`;
+      pastLog.scrollTop=pastLog.scrollHeight;todayLog.scrollTop=todayLog.scrollHeight;
+    };
+    refresh();
+
+    const adder=document.createElement("div");adder.className="phadd";
+    const inp=document.createElement("input");inp.placeholder="Type defect / note for today, tap Add";inp.className="phinp";
+    const btn=document.createElement("button");btn.textContent="Add";btn.className="phbtn";
+    const doAdd=()=>{const v=inp.value.trim();if(!v)return;appendPassHist(r.k,v);inp.value="";refresh();};
+    btn.onclick=doAdd;
+    inp.onkeydown=e=>{if(e.key==="Enter"){e.preventDefault();doAdd();}};
+    adder.appendChild(inp);adder.appendChild(btn);
+
+    wrap.appendChild(pastLabel);wrap.appendChild(pastLog);
+    wrap.appendChild(todayLabel);wrap.appendChild(todayLog);
+    wrap.appendChild(adder);
+    row.appendChild(wrap);
+    row.classList.add("phrow");
+  } else if(r.type==="alvnums"){
+    // 2 ALV buttons: green = OK (default), red = defective
+    const seg=document.createElement("div");seg.className="seg pjtseg";seg.style.flex="1";
+    for(let n=1;n<=2;n++){
+      const bb=document.createElement("button");bb.textContent="ALV-"+n;
+      const bad=val(r.k+"_"+n);
+      bb.className=bad?"pjtbad":"pjtok";
+      bb.onclick=()=>{const nv=!val(r.k+"_"+n);setVal(r.k+"_"+n,nv);bb.className=nv?"pjtbad":"pjtok";};
+      seg.appendChild(bb);
+    }
+    row.appendChild(seg);
+  } else if(r.type==="pjtnums"){
+    // 11 PJT number buttons: green = OK (default), red = defective (tap to toggle)
+    const seg=document.createElement("div");seg.className="seg pjtseg";seg.style.flex="1";
+    for(let n=1;n<=11;n++){
+      const bb=document.createElement("button");bb.textContent=n;
+      const bad=val(r.k+"_"+n);
+      bb.className=bad?"pjtbad":"pjtok";
+      bb.onclick=()=>{const nv=!val(r.k+"_"+n);setVal(r.k+"_"+n,nv);bb.className=nv?"pjtbad":"pjtok";};
+      seg.appendChild(bb);
+    }
+    row.appendChild(seg);
+  } else if(r.type==="runstop"){
+    const seg=document.createElement("div");seg.className="seg";
+    const cur=val(r.k,"");
+    [["Running",""],["Stopped","red"]].forEach(([o,cls])=>{
+      const bb=document.createElement("button");bb.textContent=o;
+      if(cur===o)bb.className="on "+cls;
+      bb.onclick=()=>{const nv=val(r.k)===o?"":o;setVal(r.k,nv);[...seg.children].forEach(c=>c.className="");if(nv)bb.className="on "+cls;};
+      seg.appendChild(bb);
+    });
+    row.appendChild(seg);
+    const i=document.createElement("input");i.className="num tiny";i.inputMode="decimal";i.placeholder="Current A";
+    i.value=val(r.k+"_amp");i.oninput=()=>setVal(r.k+"_amp",i.value);row.appendChild(i);
+  } else if(r.type==="statusval"){
+    // Running / Available / Permit toggle + a value input (pressure or dew point)
+    const seg=document.createElement("div");seg.className="seg";
+    const cur=val(r.k+"_st","");
+    ["Running","Available","Permit"].forEach(o=>{
+      const bb=document.createElement("button");bb.textContent=o;
+      const cls=o==="Permit"?"red":(o==="Available"?"amber":"");
+      if(cur===o)bb.className="on "+cls;
+      bb.onclick=()=>{const nv=val(r.k+"_st")===o?"":o;setVal(r.k+"_st",nv);[...seg.children].forEach(c=>c.className="");if(nv)bb.className="on "+cls;};
+      seg.appendChild(bb);
+    });
+    row.appendChild(seg);
+    const i=document.createElement("input");i.className="num tiny";i.inputMode="decimal";i.placeholder=r.ph||"value";
+    i.value=val(r.k+"_v");i.oninput=()=>setVal(r.k+"_v",i.value);row.appendChild(i);
+    if(r.unit){const u=document.createElement("span");u.style.color="var(--ink-mut)";u.style.fontSize="11px";u.textContent=r.unit;row.appendChild(u);}
+  } else if(r.type==="pumpstat"){
+    // Primary status (one of): Running / Available / PTW
+    // Independent flags (any combination): SOV poor, OBV high, CT choke
+    // Migrate old single-status data where val(r.k) was "SOV poor"/"OBV high" into the flag fields.
+    {
+      const old=val(r.k,"");
+      if(old==="SOV poor"){setVal(r.k+"_dsov",true);setVal(r.k,"");}
+      else if(old==="OBV high"){setVal(r.k+"_obv",true);setVal(r.k,"");}
+    }
+    const seg=document.createElement("div");seg.className="seg pumpseg";seg.style.flex="1";
+    const primary=[["Run","Running",""],["Avl","Available","amber"],["PTW","PTW","red"]];
+    const flags  =[["dSOV","dry SOV poor","amber","_dsov"],["wSOV","wet SOV poor","amber","_wsov"],["OBV","OBV high","red","_obv"],["CTC","CT choke","red","_ct"]];
+
+    primary.forEach(([short,o,cls])=>{
+      const bb=document.createElement("button");bb.textContent=short;bb.title=o;
+      const isOn=()=>val(r.k,"")===o;
+      const paint=()=>{bb.className=isOn()?("on "+cls):"";};paint();
+      bb.onclick=()=>{
+        // tap-to-toggle one-of-three
+        const nv=isOn()?"":o;
+        setVal(r.k,nv);
+        // repaint all primary buttons
+        [...seg.querySelectorAll("[data-grp='p']")].forEach(c=>c.dispatchEvent(new Event("repaint")));
+        paint();
+      };
+      bb.setAttribute("data-grp","p");
+      bb.addEventListener("repaint",paint);
+      seg.appendChild(bb);
+    });
+
+    flags.forEach(([short,o,cls,suf])=>{
+      const bb=document.createElement("button");bb.textContent=short;bb.title=o;
+      const isOn=()=>!!val(r.k+suf);
+      const paint=()=>{bb.className=isOn()?("on "+cls):"";};paint();
+      bb.onclick=()=>{const nv=!isOn();setVal(r.k+suf,nv);paint();};
+      seg.appendChild(bb);
+    });
+
+    row.appendChild(seg);
+  } else if(r.type==="seg"){
+    const seg=document.createElement("div");seg.className="seg";
+    r.opts.forEach(o=>{const b=document.createElement("button");b.textContent=o;
+      const cls=o==="NTS"?"red":(o==="Available"?"amber":"");
+      if(val(r.k)===o)b.className="on "+cls;
+      b.onclick=()=>{setVal(r.k,o);[...seg.children].forEach(c=>c.className="");b.className="on "+cls;};
+      seg.appendChild(b);});
+    row.appendChild(seg);
+  } else if(r.type==="chips"){
+    const ch=document.createElement("div");ch.className="chips";
+    r.opts.forEach(o=>{const b=document.createElement("div");b.className="chip"+((val(r.k,"").split(",").includes(o))?" on":"");b.textContent=o;
+      b.onclick=()=>{let arr=val(r.k,"").split(",").filter(Boolean);
+        if(arr.includes(o))arr=arr.filter(x=>x!==o);else arr.push(o);
+        setVal(r.k,arr.join(","));b.className="chip"+(arr.includes(o)?" on":"");};
+      ch.appendChild(b);});
+    row.appendChild(ch);
+  } else if(r.type==="hopperheader"){
+    const wrap=document.createElement("div");wrap.style.cssText="display:flex;gap:6px;flex:1";
+    ["ABL","High","Dual"].forEach(lbl=>{
+      const cap=document.createElement("div");cap.style.cssText="flex:1;text-align:center;font-size:10px;font-weight:700;color:var(--ink-mut);letter-spacing:.05em;text-transform:uppercase;padding:2px 0";
+      cap.textContent=lbl;wrap.appendChild(cap);
+    });
+    row.appendChild(wrap);
+  } else if(r.type==="hopperlevel"){
+    const wrap=document.createElement("div");wrap.style.cssText="display:flex;gap:6px;flex:1";
+    ["ABL","High","Dual"].forEach(lbl=>{
+      const inp=document.createElement("input");inp.className="num";inp.style.cssText="width:100%;text-align:center;font-size:12px;padding:4px;flex:1";
+      inp.inputMode="decimal";inp.placeholder="—";
+      inp.value=val(r.k+"_"+lbl);inp.oninput=()=>setVal(r.k+"_"+lbl,inp.value);
+      wrap.appendChild(inp);
+    });
+    row.appendChild(wrap);
+  } else { // text
+    const i=document.createElement("input");i.className="num";i.style.flex="1";i.style.width="auto";i.style.textAlign="left";
+    i.value=val(r.k);i.oninput=()=>setVal(r.k,i.value);row.appendChild(i);
+  }
+  return row;
+}
+
+function buildDefects(body,key){
+  const hint=document.createElement("p");hint.className="hint";hint.textContent="Add each defect once; carries over until you remove it.";
+  body.appendChild(hint);
+  const list=document.createElement("div");list.className="deflist";body.appendChild(list);
+  const arr=state[key]||(state[key]=[]);
+  function redraw(){list.innerHTML="";arr.forEach((d,i)=>{
+    const it=document.createElement("div");it.className="defitem";
+    const s=document.createElement("span");s.textContent=(i+1)+". "+d;
+    const x=document.createElement("button");x.textContent="×";x.onclick=()=>{arr.splice(i,1);save();redraw();};
+    it.appendChild(s);it.appendChild(x);list.appendChild(it);});}
+  redraw();
+  const add=document.createElement("div");add.className="addrow";
+  const inp=document.createElement("input");inp.placeholder="Type defect, tap Add";
+  const btn=document.createElement("button");btn.textContent="Add";
+  const doAdd=()=>{const v=inp.value.trim();if(v){arr.push(v);inp.value="";save();redraw();}};
+  btn.onclick=doAdd;inp.onkeydown=e=>{if(e.key==="Enter")doAdd();};
+  add.appendChild(inp);add.appendChild(btn);body.appendChild(add);
+}
+
+/* ---------- report generation ---------- */
+function gen(){
+  const f=state.f, b=[];
+  const L=(x)=>b.push(x);
+  const stage=currentStage();
+  L(`*ENERGO Daily Report*`);
+  L(`Stage- ${stage}`);
+  L(`Date- ${fmtDate($("rdate").value)}`);
+  L("");
+
+  // ===== STAGE 1 =====
+  if(stage==="1"){
+    L("*Unit PLF / Sp Coal*");
+    L(`U#1 : ${f.u1||""}`); L(`U#2 : ${f.u2||""}`); L("");
+    L("*Evacuation Cycles:-*");
+    L(`Pass-:1A/1B/1C/1D/1E: ${PASS1.map(u=>f["p1_"+u]||"").join("/")}`);
+    L(`Pass 2A/2B/2C/2D/2E: ${PASS2.map(u=>f["p2_"+u]||"").join("/")}`); L("");
+    L("*Silo level*");
+    const silo=(k,n)=>`${n} : ${f[k]||""}${f[k+"_F"]?" (F)":""} mtr`;
+    L(silo("s1","Silo #1"));L(silo("s2","Silo #2"));L(silo("s3","Silo #3"));
+    L(silo("a2","Augm. Silo #2"));L(silo("a3","Augm. Silo #3"));L("");
+    L("*Unloading*");
+    L(`Stage#1:- ${f.st1t||""} Ton`);
+    L(`Augm. Silo:- ${f.augt||""} Ton`);L("");
+    L("*Unit ESP field*");L("*ERM & CRM Status*");
+    L(`U#1:`);L(`OFF- ${f.u1off||""}`);L(`ALI : ${f.u1ali||""}`);L("");
+    L(`U#2 :`);L(`OFF : ${f.u2off||""}`);L(`ALH : ${f.u2ali||""}`);L("");
+    L("*Buffer hoper status*");
+    ["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"].forEach(u=>{
+      const st=f["bh_"+u+"_st"]||"Available";const pr=f["bh_"+u+"_pr"]||"";
+      const bad=[];for(let n=1;n<=11;n++){if(f["bh_"+u+"_pjt"+n])bad.push(n);}
+      L(`${u} : ${st}${pr?(" , PJT pr "+pr):""}${bad.length?(" - PJT def: "+bad.join(", ")):""}`);
+    });
+    L("*Collecting tower ,Status*");
+    [["ct1","U#1","1"],["ct2","U#2","2"]].forEach(([kk,uname,u])=>{
+      const choked=[];
+      [1,2].forEach(t=>["A","B","C","D","E"].forEach(le=>{const id=u+le+t;if(f[kk+"_"+id])choked.push(id);}));
+      L(`${uname} CT choke: ${choked.length?choked.join(", "):"Nil"}`);
+    });
+    L("");
+    L("*FAHP Status*");L(`A:- ${f.fa||""}`);L(`B:- ${f.fb||""}`);L("");
+    L(`*U#1 WU FAHP pr* ${f.wu1||""} kg/cm2`);L(`*U#2 WU FAHP pr* ${f.wu2||""} kg/cm2`);L("");
+    L("*IAC Status / Pressure*");
+    [["iac1","IAC 1","kg/cm2"],["iac2","IAC 2","kg/cm2"]].forEach(([k,nm,un])=>{
+      const st=f[k+"_st"]||"", v=f[k+"_v"]||"";L(`${nm} :- ${st}${v?(" , "+v+" "+un):""}`);});
+    L("*IAC Dryer / Dew Point*");
+    [["iacd1","IAC Dryer 1"],["iacd2","IAC Dryer 2"]].forEach(([k,nm])=>{
+      const st=f[k+"_st"]||"", v=f[k+"_v"]||"";L(`${nm} :- ${st}${v?(" , DP "+v):""}`);});
+    L("");
+    L("*Vaccum pump status*");
+    ["1","2"].forEach(u=>{
+      const run=[],other=[],flagged=[];
+      [1,2].forEach(t=>["A","B","C","D","E"].forEach(le=>{
+        const id=u+le+t;const k="vp_"+id;const v=f[k]||"";
+        const fl=[];if(f[k+"_dsov"])fl.push("dry SOV poor");if(f[k+"_wsov"])fl.push("wet SOV poor");if(f[k+"_obv"])fl.push("OBV high");if(f[k+"_ct"])fl.push("CT choke");
+        if(v==="Running"&&!fl.length)run.push(id);
+        else if(v&&!fl.length)other.push(id+" "+v);
+        else if(fl.length){const tag=fl.join(" + ")+(v?(" ("+v+")"):"");flagged.push(id+" "+tag);}
+      }));
+      L(`U#${u} Running:- ${run.length?run.join(", "):"-"}`);
+      if(other.length)L(`U#${u} Other:- ${other.join(", ")}`);
+      if(flagged.length)L(`U#${u} Flags:- ${flagged.join(", ")}`);
+    });
+    L("");
+    L("*Hopper Levels*");
+    ["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"].forEach(n=>{
+      const abl=f["hl_"+n+"_ABL"]||"",hi=f["hl_"+n+"_High"]||"",du=f["hl_"+n+"_Dual"]||"";
+      L(`${n} :- ABL: ${abl} , High: ${hi} , Dual: ${du}`);
+    });
+    L("");
+    L(`*Compressor Status & Dew Point*`);
+    [["tac1","TAC #1"],["tac2","TAC #2"],["tac3","TAC #3"],
+     ["augtac1","Aug TAC-1"],["augtac2","Aug TAC-2"],["augtac3","Aug TAC-3"]].forEach(([k,nm])=>{
+      const st=f[k+"_st"]||"",dp=f[k+"_v"]||"";
+      L(`${nm} :- ${st}${dp?(" , DP "+dp):""}`);});
+    L("");
+    L("*ALV Defects*");
+    {
+      const passes=["1A","1B","1C","1D","1E","2A","2B","2C","2D","2E"];
+      let any=false;
+      passes.forEach(p=>{const bad=[];for(let i=1;i<=2;i++){if(f["alv_"+p+"_"+i])bad.push("ALV-"+i);}
+        if(bad.length){L(`${p} :- ${bad.join(", ")}`);any=true;}});
+      if(!any)L("Nil");
+    }
+    L("");
+    L("*Vent Fan Status*");
+    [["vf_s1f1","Silo-1 Fan 1"],["vf_s1f2","Silo-1 Fan 2"],["vf_s2f1","Silo-2 Fan 1"],["vf_s2f2","Silo-2 Fan 2"],
+     ["vf_s3f1","Silo-3 Fan 1"],["vf_s3f2","Silo-3 Fan 2"],["vf_a2","Aug Silo-2 Fan"],["vf_a3","Aug Silo-3 Fan"]].forEach(([k,nm])=>{
+      const st=f[k]||"",amp=f[k+"_amp"]||"";L(`${nm} :- ${st}${amp?(" , "+amp+" A"):""}`);});
+    L("");
+  }
+
+  // ===== STAGE 2 =====
+  else if(stage==="2"){
+    L("*Unit PLF / Sp Coal*");
+    L(`U#3 : ${f.u3||""}`); L(`U#4 : ${f.u4||""}`); L("");
+    L("*Evacuation Cycles:-*");
+    L(`Pass 3A/3B/3C/3D: ${PASS3.map(u=>f["p3_"+u]||"").join("/")}`);
+    L(`Pass 4A/4B/4C/4D: ${PASS4.map(u=>f["p4_"+u]||"").join("/")}`); L("");
+    L("*Silo level*");
+    const silo=(k,n)=>`${n} : ${f[k]||""}${f[k+"_F"]?" (F)":""} mtr`;
+    L(silo("sA","Silo A"));L(silo("sB","Silo B"));L(silo("sC","Silo C"));L("");
+    L("*Unloading*");
+    L(`Stage#2 (previous day):- ${f.st2t||""} Ton`);L("");
+    L("*Unit ESP field*");L("*ERM & CRM Status*");
+    L(`U#3:`);L(`OFF- ${f.u3off||""}`);L(`ALI : ${f.u3ali||""}`);L("");
+    L(`U#4 :`);L(`OFF : ${f.u4off||""}`);L(`ALH : ${f.u4ali||""}`);L("");
+    L("*Buffer hoper status*");
+    ["3A","3B","3C","3D","4A","4B","4C","4D"].forEach(u=>{
+      const st=f["bh_"+u+"_st"]||"Available";const pr=f["bh_"+u+"_pr"]||"";
+      const bad=[];for(let n=1;n<=11;n++){if(f["bh_"+u+"_pjt"+n])bad.push(n);}
+      L(`${u} : ${st}${pr?(" , PJT pr "+pr):""}${bad.length?(" - PJT def: "+bad.join(", ")):""}`);
+    });
+    L("*Collecting tower ,Status*");
+    [["ct3","U#3","3"],["ct4","U#4","4"]].forEach(([kk,uname,u])=>{
+      const choked=[];
+      [1,2].forEach(t=>["A","B","C","D"].forEach(le=>{const id=u+le+t;if(f[kk+"_"+id])choked.push(id);}));
+      L(`${uname} CT choke: ${choked.length?choked.join(", "):"Nil"}`);
+    });
+    L("");
+    L("*FAHP Status*");L(`A:- ${f.s2_fa||""}`);L(`B:- ${f.s2_fb||""}`);L(`C:- ${f.s2_fc||""}`);L("");
+    L(`*U#3 WU FAHP pr* ${f.wu3||""} kg/cm2`);L(`*U#4 WU FAHP pr* ${f.wu4||""} kg/cm2`);L("");
+    L("*IAC Status / Pressure*");
+    [["iacA","IAC A"],["iacB","IAC B"],["iacC","IAC C"],["iacD","IAC D"]].forEach(([k,nm])=>{
+      const st=f[k+"_st"]||"", v=f[k+"_v"]||"";L(`${nm} :- ${st}${v?(" , "+v+" kg/cm2"):""}`);});
+    L("*IAC Dryer / Dew Point*");
+    [["iacdA","IAC Dryer A"],["iacdB","IAC Dryer B"],["iacdC","IAC Dryer C"],["iacdD","IAC Dryer D"]].forEach(([k,nm])=>{
+      const st=f[k+"_st"]||"", v=f[k+"_v"]||"";L(`${nm} :- ${st}${v?(" , DP "+v):""}`);});
+    L("");
+    L("*Vaccum pump status*");
+    ["3","4"].forEach(u=>{
+      const run=[],other=[],flagged=[];
+      [1,2].forEach(t=>["A","B","C","D"].forEach(le=>{
+        const id=u+le+t;const k="vp_"+id;const v=f[k]||"";
+        const fl=[];if(f[k+"_dsov"])fl.push("dry SOV poor");if(f[k+"_wsov"])fl.push("wet SOV poor");if(f[k+"_obv"])fl.push("OBV high");if(f[k+"_ct"])fl.push("CT choke");
+        if(v==="Running"&&!fl.length)run.push(id);
+        else if(v&&!fl.length)other.push(id+" "+v);
+        else if(fl.length){const tag=fl.join(" + ")+(v?(" ("+v+")"):"");flagged.push(id+" "+tag);}
+      }));
+      L(`U#${u} Running:- ${run.length?run.join(", "):"-"}`);
+      if(other.length)L(`U#${u} Other:- ${other.join(", ")}`);
+      if(flagged.length)L(`U#${u} Flags:- ${flagged.join(", ")}`);
+    });
+    L("");
+    L(`*Compressor Status & Dew Point*`);
+    [["tac3A","TAC-3A"],["tac3B","TAC-3B"],["tac3C","TAC-3C"],
+     ["tac4A","TAC-4A"],["tac4B","TAC-4B"],["tac4C","TAC-4C"]].forEach(([k,nm])=>{
+      const st=f[k+"_st"]||"",dp=f[k+"_v"]||"";
+      L(`${nm} :- ${st}${dp?(" , DP "+dp):""}`);});
+    L("");
+    L("*ALV Defects*");
+    {
+      const passes=["3A","3B","3C","3D","4A","4B","4C","4D"];
+      let any=false;
+      passes.forEach(p=>{const bad=[];for(let i=1;i<=2;i++){if(f["alv_"+p+"_"+i])bad.push("ALV-"+i);}
+        if(bad.length){L(`${p} :- ${bad.join(", ")}`);any=true;}});
+      if(!any)L("Nil");
+    }
+    L("");
+    L("*Vent Fan Status*");
+    [["vf_A","Vent Fan A"],["vf_B","Vent Fan B"],["vf_C","Vent Fan C"]].forEach(([k,nm])=>{
+      const st=f[k]||"",amp=f[k+"_amp"]||"";L(`${nm} :- ${st}${amp?(" , "+amp+" A"):""}`);});
+    L("");
+  }
+
+  const defs=(arr,title)=>{L(`*${title}*`);(state[arr]||[]).forEach((d,i)=>L(`${i+1}. ${d}`));L("");};
+  defs("def","Defects:-");defs("cidef","C&I Defects: -");defs("eldef","Elec Defects");
+  return b.join("\n");
+}
+function fmtDate(d){if(!d)return "";const [y,m,dd]=d.split("-");return `${dd}/${m}/${y}`;}
+
+/* ---------- storage ---------- */
+function key(){return "energo_s"+currentStage()+"_"+($("rdate")?$("rdate").value:"");}
+
+// Pass History — stored across all days/shifts under one global key.
+const ESP_HIST_KEY="energo_esphist";
+function loadPassHist(){try{return JSON.parse(localStorage.getItem(ESP_HIST_KEY)||"{}");}catch(e){return {};}}
+function savePassHist(o){try{localStorage.setItem(ESP_HIST_KEY,JSON.stringify(o));}catch(e){}}
+function appendPassHist(pass,text){
+  const t=(text||"").trim();if(!t)return;
+  const h=loadPassHist();
+  const d=$("rdate").value||(new Date().toISOString().slice(0,10));
+  const [y,m,dd]=d.split("-");const stamp=`${dd}/${m}/${y}`;
+  const line=`${stamp} — ${t}`;
+  h[pass]=(h[pass]||"")+(h[pass]?"\n":"")+line;
+  savePassHist(h);
+  return h[pass];
+}
+function loadState(){
+  return {shift:"C-Shift",f:{},def:[],cidef:[],eldef:[]};
+}
+function save(){
+  try{localStorage.setItem(key(),JSON.stringify(state));$("savedot").textContent="Saved on device";}
+  catch(e){$("savedot").textContent="Save error";}
+}
+function restore(){
+  try{const raw=localStorage.getItem(key());if(raw){const o=JSON.parse(raw);state.f=o.f||{};state.def=o.def||[];state.cidef=o.cidef||[];state.eldef=o.eldef||[];}
+    else{state.f={};state.def=[];state.cidef=[];state.eldef=[];}}catch(e){}
+  render();
+}
+
+/* ---------- wire up ---------- */
+const today=new Date().toISOString().slice(0,10);
+$("rdate").value=today;
+$("rdate").onchange=restore;
+// Track previous stage so we save under the right key when user switches
+let prevStage=null;
+$("stage").addEventListener("focus",()=>{prevStage=$("stage").value;});
+$("stage").onchange=()=>{
+  // save current in-memory data under the PREVIOUS stage's key, then load this stage's data
+  if(prevStage){
+    const saveKey="energo_s"+prevStage+"_"+($("rdate").value||"");
+    try{localStorage.setItem(saveKey,JSON.stringify(state));}catch(e){}
+  }
+  prevStage=$("stage").value;
+  restore();
+};
+$("genBtn").onclick=()=>{$("reportOut").textContent=gen();$("mbg").classList.add("open");};
+$("closeBtn").onclick=()=>$("mbg").classList.remove("open");
+$("mbg").onclick=e=>{if(e.target===$("mbg"))$("mbg").classList.remove("open");};
+$("copyBtn").onclick=async()=>{const t=gen();
+  try{await navigator.clipboard.writeText(t);toast("Copied — paste into WhatsApp");}
+  catch(e){const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();toast("Copied");}
+};
+$("clrBtn").onclick=()=>{if(confirm("Reset this shift's report?")){state.f={};state.def=[];state.cidef=[];state.eldef=[];save();render();}};
+let tt;function toast(m){let e=document.querySelector(".toast");if(!e){e=document.createElement("div");e.className="toast";document.body.appendChild(e);}e.textContent=m;clearTimeout(tt);tt=setTimeout(()=>e.remove(),2500);}
+
+/* PWA manifest */
+const manifest={name:"ENERGO Shift Report",short_name:"ShiftReport",start_url:".",display:"standalone",
+  background_color:"#0c0f14",theme_color:"#0c0f14",icons:[{src:"data:image/svg+xml;base64,"+btoa('<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512"><rect width="512" height="512" rx="96" fill="#1F3864"/><text x="256" y="310" font-size="150" font-family="Arial" font-weight="bold" fill="#5ec8e0" text-anchor="middle">ESR</text></svg>'),sizes:"512x512",type:"image/svg+xml"}]};
+$("manifest").setAttribute("href","data:application/json;base64,"+btoa(JSON.stringify(manifest)));
+
+restore();
+</script>
+</body>
+</html>
